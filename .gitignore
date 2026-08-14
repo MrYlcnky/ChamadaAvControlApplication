@@ -1,0 +1,19 @@
+# Node
+**/node_modules/
+**/dist/
+**/.vite/
+
+# .NET
+**/bin/
+**/obj/
+
+# Env
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

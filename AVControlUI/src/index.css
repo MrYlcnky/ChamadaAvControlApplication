@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sora: "Sora", sans-serif;
+
+  /* Dark theme */
+  --color-dark-bg: #050816;
+  --color-dark-panel: #0f172a;
+}
+
+/* Genel yapı */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-dark-bg text-gray-200 font-sora antialiased transition-colors duration-300;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Seçili yazı rengi */
+*::selection {
+  background: rgba(59, 130, 246, 0.35);
+  color: inherit;
+}
+
+/* Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.45) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.35);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.55);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* AV özel animasyonları */
+@layer utilities {
+  .animate-av-float {
+    animation: avFloat 8s ease-in-out infinite;
+  }
+
+  .animate-av-float-delayed {
+    animation: avFloat 9s ease-in-out infinite;
+    animation-delay: 1.2s;
+  }
+
+  .animate-av-pulse-soft {
+    animation: avPulseSoft 2.4s ease-in-out infinite;
+  }
+
+  .animate-av-scan-line {
+    animation: avScanLine 3s linear infinite;
+  }
+}
+
+@keyframes avFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(24px, -18px, 0) scale(1.05);
+  }
+}
+
+@keyframes avPulseSoft {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes avScanLine {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}

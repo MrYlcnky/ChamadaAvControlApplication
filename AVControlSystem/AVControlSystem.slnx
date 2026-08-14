@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="AVControl.Core/AVControl.Core.csproj" />
+  <Project Path="AVControl.Data/AVControl.Data.csproj" />
+  <Project Path="AVControl.Service/AVControl.Service.csproj" />
+  <Project Path="AVControl.WEBAPI/AVControl.WEBAPI.csproj" />
+</Solution>

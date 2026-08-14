@@ -1,0 +1,6 @@
+@AVControl.WEBAPI_HostAddress = http://localhost:5083
+
+GET {{AVControl.WEBAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
