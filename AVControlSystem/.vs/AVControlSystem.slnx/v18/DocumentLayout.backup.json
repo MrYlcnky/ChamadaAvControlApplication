@@ -1,10 +1,54 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\projeler\\avcontrol\\AVControlSystem\\",
+  "WorkspaceRootPath": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{ADF43563-15DE-EBB5-E252-A2983F2DC110}|AVControl.WEBAPI\\AVControl.WEBAPI.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.webapi\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{ADF43563-15DE-EBB5-E252-A2983F2DC110}|AVControl.WEBAPI\\AVControl.WEBAPI.csproj|solutionrelative:avcontrol.webapi\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A1B13308-6B0A-D458-CB61-EC3686D006DF}|AVControl.Service\\AVControl.Service.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.service\\services\\mactakvimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B13308-6B0A-D458-CB61-EC3686D006DF}|AVControl.Service\\AVControl.Service.csproj|solutionrelative:avcontrol.service\\services\\mactakvimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B13308-6B0A-D458-CB61-EC3686D006DF}|AVControl.Service\\AVControl.Service.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.service\\mapping\\mapprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B13308-6B0A-D458-CB61-EC3686D006DF}|AVControl.Service\\AVControl.Service.csproj|solutionrelative:avcontrol.service\\mapping\\mapprofile.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{ADF43563-15DE-EBB5-E252-A2983F2DC110}|AVControl.WEBAPI\\AVControl.WEBAPI.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.webapi\\controllers\\favoritakimcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{ADF43563-15DE-EBB5-E252-A2983F2DC110}|AVControl.WEBAPI\\AVControl.WEBAPI.csproj|solutionrelative:avcontrol.webapi\\controllers\\favoritakimcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A1B13308-6B0A-D458-CB61-EC3686D006DF}|AVControl.Service\\AVControl.Service.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.service\\services\\favoritakimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A1B13308-6B0A-D458-CB61-EC3686D006DF}|AVControl.Service\\AVControl.Service.csproj|solutionrelative:avcontrol.service\\services\\favoritakimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.core\\interfaces\\ifavoritakimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|solutionrelative:avcontrol.core\\interfaces\\ifavoritakimservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.core\\dtos\\favoritakimdtos\\favoritakimlistedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|solutionrelative:avcontrol.core\\dtos\\favoritakimdtos\\favoritakimlistedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.core\\dtos\\favoritakimdtos\\favoritakimguncelledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|solutionrelative:avcontrol.core\\dtos\\favoritakimdtos\\favoritakimguncelledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.core\\dtos\\favoritakimdtos\\favoritakimekledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|solutionrelative:avcontrol.core\\dtos\\favoritakimdtos\\favoritakimekledto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.core\\entities\\favoritakim.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|solutionrelative:avcontrol.core\\entities\\favoritakim.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.core\\entities\\favorilig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|solutionrelative:avcontrol.core\\entities\\favorilig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.core\\entities\\favoritakimlig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D7E42E5A-8E4F-253C-F1C7-64156909C8DC}|AVControl.Core\\AVControl.Core.csproj|solutionrelative:avcontrol.core\\entities\\favoritakimlig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4839E51B-9D0E-E290-B911-10F85161A411}|AVControl.Data\\AVControl.Data.csproj|c:\\users\\mehmet.yalcinkaya\\desktop\\ortakwsklasor\\projeler\\avcontrol\\avcontrolsystem\\avcontrol.data\\context\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4839E51B-9D0E-E290-B911-10F85161A411}|AVControl.Data\\AVControl.Data.csproj|solutionrelative:avcontrol.data\\context\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -19,19 +63,158 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "AuthController.cs",
-              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\projeler\\avcontrol\\AVControlSystem\\AVControl.WEBAPI\\Controllers\\AuthController.cs",
-              "RelativeDocumentMoniker": "AVControl.WEBAPI\\Controllers\\AuthController.cs",
-              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\projeler\\avcontrol\\AVControlSystem\\AVControl.WEBAPI\\Controllers\\AuthController.cs",
-              "RelativeToolTip": "AVControl.WEBAPI\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAEcAAAAAAAAAAAAYwFsAAAANAAAAAAAAAA==",
+              "Title": "MacTakvimService.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Service\\Services\\MacTakvimService.cs",
+              "RelativeDocumentMoniker": "AVControl.Service\\Services\\MacTakvimService.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Service\\Services\\MacTakvimService.cs",
+              "RelativeToolTip": "AVControl.Service\\Services\\MacTakvimService.cs",
+              "ViewState": "AgIAADwCAAAAAAAAAAAwwG0CAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-29T23:42:05.835Z",
+              "WhenOpened": "2026-10-06T00:40:27.233Z",
               "EditorCaption": ""
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MapProfile.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Service\\Mapping\\MapProfile.cs",
+              "RelativeDocumentMoniker": "AVControl.Service\\Mapping\\MapProfile.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Service\\Mapping\\MapProfile.cs",
+              "RelativeToolTip": "AVControl.Service\\Mapping\\MapProfile.cs",
+              "ViewState": "AgIAAEQAAAAAAAAAAIAwwHAAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:38:21.698Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "FavoriTakimController.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.WEBAPI\\Controllers\\FavoriTakimController.cs",
+              "RelativeDocumentMoniker": "AVControl.WEBAPI\\Controllers\\FavoriTakimController.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.WEBAPI\\Controllers\\FavoriTakimController.cs",
+              "RelativeToolTip": "AVControl.WEBAPI\\Controllers\\FavoriTakimController.cs",
+              "ViewState": "AgIAALIAAAAAAAAAAAAwwMsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:36:49.041Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "FavoriTakimService.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Service\\Services\\FavoriTakimService.cs",
+              "RelativeDocumentMoniker": "AVControl.Service\\Services\\FavoriTakimService.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Service\\Services\\FavoriTakimService.cs",
+              "RelativeToolTip": "AVControl.Service\\Services\\FavoriTakimService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAKYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:36:03.849Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IFavoriTakimService.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Interfaces\\IFavoriTakimService.cs",
+              "RelativeDocumentMoniker": "AVControl.Core\\Interfaces\\IFavoriTakimService.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Interfaces\\IFavoriTakimService.cs",
+              "RelativeToolTip": "AVControl.Core\\Interfaces\\IFavoriTakimService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:35:53.233Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "FavoriTakimListeDto.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimListeDto.cs",
+              "RelativeDocumentMoniker": "AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimListeDto.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimListeDto.cs",
+              "RelativeToolTip": "AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimListeDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:34:17.485Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "FavoriTakimGuncelleDto.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimGuncelleDto.cs",
+              "RelativeDocumentMoniker": "AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimGuncelleDto.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimGuncelleDto.cs",
+              "RelativeToolTip": "AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimGuncelleDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:34:12.038Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "FavoriTakimEkleDto.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimEkleDto.cs",
+              "RelativeDocumentMoniker": "AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimEkleDto.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimEkleDto.cs",
+              "RelativeToolTip": "AVControl.Core\\Dtos\\FavoriTakimDtos\\FavoriTakimEkleDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:34:03.466Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "AppDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Data\\Context\\AppDbContext.cs",
+              "RelativeDocumentMoniker": "AVControl.Data\\Context\\AppDbContext.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Data\\Context\\AppDbContext.cs",
+              "RelativeToolTip": "AVControl.Data\\Context\\AppDbContext.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAgwEsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:28:35.446Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "FavoriTakimLig.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Entities\\FavoriTakimLig.cs",
+              "RelativeDocumentMoniker": "AVControl.Core\\Entities\\FavoriTakimLig.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Entities\\FavoriTakimLig.cs",
+              "RelativeToolTip": "AVControl.Core\\Entities\\FavoriTakimLig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:27:36.615Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "FavoriLig.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Entities\\FavoriLig.cs",
+              "RelativeDocumentMoniker": "AVControl.Core\\Entities\\FavoriLig.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Entities\\FavoriLig.cs",
+              "RelativeToolTip": "AVControl.Core\\Entities\\FavoriLig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:27:15.585Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "FavoriTakim.cs",
+              "DocumentMoniker": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Entities\\FavoriTakim.cs",
+              "RelativeDocumentMoniker": "AVControl.Core\\Entities\\FavoriTakim.cs",
+              "ToolTip": "C:\\Users\\mehmet.yalcinkaya\\Desktop\\OrtakWSKlasor\\Projeler\\avcontrol\\AVControlSystem\\AVControl.Core\\Entities\\FavoriTakim.cs",
+              "RelativeToolTip": "AVControl.Core\\Entities\\FavoriTakim.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-06T00:24:48.633Z",
+              "EditorCaption": ""
             }
           ]
         }

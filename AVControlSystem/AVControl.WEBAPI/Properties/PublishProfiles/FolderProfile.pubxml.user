@@ -2,8 +2,8 @@
 <!-- https://go.microsoft.com/fwlink/?LinkID=208121. -->
 <Project>
   <PropertyGroup>
-    <_PublishTargetUrl>C:\Users\mehmet.yalcinkaya\Desktop\projeler\avcontrol\backend</_PublishTargetUrl>
-    <History>True|2026-07-29T23:58:05.2608551Z||;True|2026-06-29T06:32:59.2353271+03:00||;True|2026-06-26T15:04:35.6469919+03:00||;True|2026-06-26T12:51:45.9821151+03:00||;True|2026-06-26T12:41:07.5233095+03:00||;True|2026-06-26T11:07:31.2785730+03:00||;True|2026-06-26T10:13:11.6932419+03:00||;True|2026-06-26T10:09:01.1611195+03:00||;True|2026-06-26T09:59:34.0892115+03:00||;</History>
+    <_PublishTargetUrl>C:\Users\mehmet.yalcinkaya\Desktop\OrtakWSKlasor\Projeler\avcontrol\backend</_PublishTargetUrl>
+    <History>True|2026-10-06T02:03:20.6166098Z||;True|2026-07-30T02:58:05.2608551+03:00||;True|2026-06-29T06:32:59.2353271+03:00||;True|2026-06-26T15:04:35.6469919+03:00||;True|2026-06-26T12:51:45.9821151+03:00||;True|2026-06-26T12:41:07.5233095+03:00||;True|2026-06-26T11:07:31.2785730+03:00||;True|2026-06-26T10:13:11.6932419+03:00||;True|2026-06-26T10:09:01.1611195+03:00||;True|2026-06-26T09:59:34.0892115+03:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

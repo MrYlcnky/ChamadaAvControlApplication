@@ -253,5 +253,106 @@ namespace AVControl.Service.Services
 
             return success;
         }
+
+
+        // 4. KONTROL PANELİ BAĞIMSIZ KUMANDA TUŞ GÖNDERME
+        public async Task<bool> KontrolPaneliKumandaTusGonderAsync(
+            int remoteControlId,
+            int irTransmitterId,
+            string tusKodu,
+            int kullaniciId)
+        {
+            if (remoteControlId <= 0 ||
+                irTransmitterId <= 0 ||
+                string.IsNullOrWhiteSpace(tusKodu))
+            {
+                return false;
+            }
+
+            // ------------------------------------------------------------
+            // 1. KUMANDA + IR VERİCİ EŞLEŞMESİ GERÇEKTEN VAR MI?
+            // ------------------------------------------------------------
+
+            var inputEslesmesiVarMi =
+                (await _inputRepo.KosulaGoreGetirAsync(x =>
+                    x.AktifMi &&
+                    x.RemoteControlId == remoteControlId &&
+                    x.IrTransmitterId == irTransmitterId))
+                .Any();
+
+            var outputEslesmesiVarMi =
+                (await _outputRepo.KosulaGoreGetirAsync(x =>
+                    x.AktifMi &&
+                    x.RemoteControlId == remoteControlId &&
+                    x.IrTransmitterId == irTransmitterId))
+                .Any();
+
+            // Frontend rastgele bir kumanda ile rastgele Pi eşleştiremesin.
+            if (!inputEslesmesiVarMi && !outputEslesmesiVarMi)
+            {
+                return false;
+            }
+
+            // ------------------------------------------------------------
+            // 2. IR VERİCİYİ BUL
+            // ------------------------------------------------------------
+
+            var pi = await _piRepo.IdyeGoreGetirAsync(irTransmitterId);
+
+            if (pi == null || !pi.AktifMi)
+            {
+                return false;
+            }
+
+            // ------------------------------------------------------------
+            // 3. SEÇİLEN KUMANDANIN TUŞ SİNYALİNİ BUL
+            // ------------------------------------------------------------
+
+            var normalizedTusKodu = tusKodu.Trim().ToUpper();
+
+            var tuslar = await _buttonRepo.KosulaGoreGetirAsync(x =>
+                x.RemoteControlId == remoteControlId &&
+                x.AktifMi);
+
+            var tus = tuslar.FirstOrDefault(x =>
+                !string.IsNullOrWhiteSpace(x.TusKodu) &&
+                x.TusKodu.Trim().ToUpper() == normalizedTusKodu);
+
+            if (tus == null || string.IsNullOrWhiteSpace(tus.RawDataJson))
+            {
+                return false;
+            }
+
+            // ------------------------------------------------------------
+            // 4. IR SİNYALİNİ DOĞRUDAN HEDEF PI'YE GÖNDER
+            // ------------------------------------------------------------
+
+            var success = await _commandService.SendIrCommandAsync(
+                pi.IpAdresi,
+                tus.RawDataJson);
+
+            if (!success)
+            {
+                return false;
+            }
+
+            // ------------------------------------------------------------
+            // 5. İŞLEM LOGU
+            // ------------------------------------------------------------
+
+            await _logRepo.EkleAsync(new IslemLog
+            {
+                KullaniciId = kullaniciId,
+                IslemTipi = "Kontrol Paneli Kumanda",
+                Detaylar =
+                    $"Kumanda ID: {remoteControlId}, " +
+                    $"IR Verici: {pi.CihazAdi}, " +
+                    $"Tuş: '{tus.TusKodu}'"
+            });
+
+            await _unitOfWork.KaydetAsync();
+
+            return true;
+        }
     }
 }

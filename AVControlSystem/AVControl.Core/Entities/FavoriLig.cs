@@ -9,5 +9,6 @@ namespace AVControl.Core.Entities
     public class FavoriLig : BaseEntity
     {
         public required string LigAdi { get; set; }
+
     }
 }

@@ -88,10 +88,29 @@ namespace AVControl.Service.Mapping
             CreateMap<IrTransmitter, IrTransmitterGuncelleDto>().ReverseMap();
             CreateMap<IrTransmitter, IrTransmitterListeDto>().ReverseMap();
 
-           // Favori Takım 
-        CreateMap<FavoriTakim, FavoriTakimListeDto>().ReverseMap();
-            CreateMap<FavoriTakim, FavoriTakimEkleDto>().ReverseMap();
-            CreateMap<FavoriTakim, FavoriTakimGuncelleDto>().ReverseMap();
+            // Favori Takım
+            CreateMap<FavoriTakim, FavoriTakimListeDto>()
+                .ForMember(
+                    dest => dest.Ligler,
+                    opt => opt.MapFrom(src =>
+                        src.FavoriTakimLigleri
+                            .Where(x => x.AktifMi)
+                            .Select(x => x.LigAdi)
+                            .ToList()
+                    )
+                );
+
+            CreateMap<FavoriTakimEkleDto, FavoriTakim>()
+                .ForMember(
+                    dest => dest.FavoriTakimLigleri,
+                    opt => opt.Ignore()
+                );
+
+            CreateMap<FavoriTakimGuncelleDto, FavoriTakim>()
+                .ForMember(
+                    dest => dest.FavoriTakimLigleri,
+                    opt => opt.Ignore()
+                );
 
             // Favori Lig 
             CreateMap<FavoriLig, FavoriLigListeDto>().ReverseMap();

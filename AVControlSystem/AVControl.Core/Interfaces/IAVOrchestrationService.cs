@@ -12,5 +12,8 @@
         Task<bool> TekilTusGonderAsync(int outputZoneId, string tusKodu, int kullaniciId, bool tvKontroluMu = false);
 
         Task<bool> TopluKaynakDegistirAsync(List<int> outputZoneIds, int inputSourceId, int kullaniciId);
+
+        // Kontrol panelindeki bağımsız kumandadan doğrudan IR komutu gönderir
+        Task<bool> KontrolPaneliKumandaTusGonderAsync( int remoteControlId, int irTransmitterId, string tusKodu, int kullaniciId);
     }
 }

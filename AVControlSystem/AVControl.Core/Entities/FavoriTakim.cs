@@ -9,5 +9,7 @@ namespace AVControl.Core.Entities
     public class FavoriTakim: BaseEntity
     {
         public required string TakimAdi { get; set; }
+
+        public ICollection<FavoriTakimLig> FavoriTakimLigleri { get; set; } = new List<FavoriTakimLig>();
     }
 }

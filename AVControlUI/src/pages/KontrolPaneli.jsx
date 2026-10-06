@@ -1,66 +1,115 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner /*faSignal*/ } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+
 import { toast } from "react-toastify";
 
 // COMPONENTLER
 import OutputListSidebar from "../components/kontrolPaneli/OutputListSidebar";
 import ZoneDetailPanel from "../components/kontrolPaneli/ZoneDetailPanel";
 import MacTakvimSidebar from "../components/kontrolPaneli/MacTakvimSidebar";
+import KumandalarSidebar from "../components/kontrolPaneli/KumandalarSidebar";
 
+// SERVİSLER
 import inputSourceService from "../services/inputSourceService";
 import channelListService from "../services/channelListService";
 import orchestrationService from "../services/orchestrationService";
 import matrixService from "../services/matrixService";
+
+// ================================================================
+// YARDIMCI METOTLAR
+// ================================================================
+
+const normalizeData = (response) => {
+  return Array.isArray(response) ? response : response?.data || [];
+};
+
+const getKullaniciId = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("kullanici") || "{}");
+
+    return user?.id || 1;
+  } catch {
+    return 1;
+  }
+};
+
+const getInitialData = async () => {
+  const [outputData, inputData, matrixData] = await Promise.all([
+    orchestrationService.getKontrolPaneliBolgeler(),
+    inputSourceService.tumunuGetir(),
+    matrixService.getAll(),
+  ]);
+
+  return {
+    outputs: normalizeData(outputData),
+    inputs: normalizeData(inputData),
+    matrices: normalizeData(matrixData),
+  };
+};
+
+// ================================================================
+// COMPONENT
+// ================================================================
 
 const KontrolPaneli = () => {
   const [outputs, setOutputs] = useState([]);
   const [inputs, setInputs] = useState([]);
   const [matrices, setMatrices] = useState([]);
 
-  // SADECE ÇOKLU SEÇİM İÇİN DİZİ TUTUYORUZ
   const [selectedOutputs, setSelectedOutputs] = useState([]);
+
   const [activeInputId, setActiveInputId] = useState(null);
+
   const [channels, setChannels] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
 
-  const getKullaniciId = () => {
-    const user = JSON.parse(localStorage.getItem("kullanici") || "{}");
-    return user.id || 1; // Eğer bulamazsa varsayılan 1 döner
-  };
+  const [actionLoading, setActionLoading] = useState(false);
 
   const KULLANICI_ID = getKullaniciId();
 
-  const normalizeData = (response) => {
-    return Array.isArray(response) ? response : response?.data || [];
-  };
+  // ==============================================================
+  // İLK YÜKLEME
+  // ==============================================================
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-      setLoading(true);
+    let cancelled = false;
 
-      try {
-        const [outputData, inputData, matrixData] = await Promise.all([
-          orchestrationService.getKontrolPaneliBolgeler(),
-          inputSourceService.tumunuGetir(),
-          matrixService.getAll(),
-        ]);
+    getInitialData()
+      .then((data) => {
+        if (cancelled) {
+          return;
+        }
 
-        setOutputs(normalizeData(outputData));
-        setInputs(normalizeData(inputData));
-        setMatrices(normalizeData(matrixData));
-      } catch (error) {
+        setOutputs(data.outputs);
+        setInputs(data.inputs);
+        setMatrices(data.matrices);
+      })
+      .catch((error) => {
+        if (cancelled) {
+          return;
+        }
+
         console.error("Kontrol paneli verileri yüklenemedi:", error);
-        toast.error("Sistem verileri yüklenirken hata oluştu.");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchInitialData();
+        toast.error("Sistem verileri yüklenirken hata oluştu.");
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  // ==============================================================
+  // KANALLARI GETİR
+  // ==============================================================
 
   const fetchChannelsForInput = async (inputId) => {
     if (!inputId) {
@@ -70,6 +119,7 @@ const KontrolPaneli = () => {
 
     try {
       const allChannels = await channelListService.getAll();
+
       const channelList = normalizeData(allChannels);
 
       const inputChannels = channelList
@@ -79,24 +129,37 @@ const KontrolPaneli = () => {
       setChannels(inputChannels);
     } catch (error) {
       console.error("Kanallar çekilemedi:", error);
+
       setChannels([]);
     }
   };
 
+  // ==============================================================
+  // ÇOKLU BÖLGE SEÇİMİ
+  // ==============================================================
+
   const toggleOutputSelection = (output) => {
     setSelectedOutputs((prev) => {
-      const isSelected = prev.find((item) => item.id === output.id);
+      const isSelected = prev.some((item) => item.id === output.id);
+
       if (isSelected) {
         return prev.filter((item) => item.id !== output.id);
       }
+
       return [...prev, output];
     });
   };
 
+  // ==============================================================
+  // TEK BÖLGE SEÇ
+  // ==============================================================
+
   const handleSelectOne = async (output) => {
     setSelectedOutputs([output]);
+
     setActiveInputId(null);
     setChannels([]);
+
     setActionLoading(true);
 
     try {
@@ -107,10 +170,10 @@ const KontrolPaneli = () => {
       let foundInputId = null;
 
       if (matrixStatus && matrixStatus.baglantiBasarili) {
-        const outPort = matrixStatus.cikislar.find(
+        const outPort = matrixStatus.cikislar?.find(
           (cikis) =>
             cikis.port.toString() === output.portKodu.toString() ||
-            String.fromCharCode(64 + parseInt(cikis.port)) ===
+            String.fromCharCode(64 + parseInt(cikis.port, 10)) ===
               output.portKodu.toString(),
         );
 
@@ -133,6 +196,7 @@ const KontrolPaneli = () => {
 
       if (foundInputId) {
         setActiveInputId(foundInputId);
+
         await fetchChannelsForInput(foundInputId);
       } else {
         setActiveInputId(null);
@@ -140,10 +204,12 @@ const KontrolPaneli = () => {
       }
     } catch (error) {
       console.error("Matrix canlı durum alınamadı:", error);
+
       toast.error("Matrix'ten canlı durum alınamadı.");
 
       if (output.guncelInputSourceId) {
         setActiveInputId(output.guncelInputSourceId);
+
         await fetchChannelsForInput(output.guncelInputSourceId);
       } else {
         setActiveInputId(null);
@@ -154,22 +220,33 @@ const KontrolPaneli = () => {
     }
   };
 
+  // ==============================================================
+  // TEK BÖLGE KAYNAK DEĞİŞTİR
+  // ==============================================================
+
   const handleSourceChange = async (inputId) => {
-    if (selectedOutputs.length !== 1) return;
+    if (selectedOutputs.length !== 1) {
+      return;
+    }
 
     const singleOutput = selectedOutputs[0];
+
     const previousActiveInputId = activeInputId;
+
     const previousChannels = channels;
 
-    // UI anında yeni kaynağa göre hazırlansın
     setActiveInputId(inputId);
+
     await fetchChannelsForInput(inputId);
+
     setActionLoading(true);
 
     try {
       await orchestrationService.kaynakDegistir({
         outputZoneId: singleOutput.id,
+
         inputSourceId: inputId,
+
         kullaniciId: KULLANICI_ID,
       });
 
@@ -178,38 +255,56 @@ const KontrolPaneli = () => {
       setOutputs((prevOutputs) =>
         prevOutputs.map((output) =>
           output.id === singleOutput.id
-            ? { ...output, guncelInputSourceId: inputId }
+            ? {
+                ...output,
+                guncelInputSourceId: inputId,
+              }
             : output,
         ),
       );
 
       setSelectedOutputs((prev) => [
-        { ...prev[0], guncelInputSourceId: inputId },
+        {
+          ...prev[0],
+          guncelInputSourceId: inputId,
+        },
       ]);
     } catch (error) {
-      // Hata olursa eski duruma dön
       setActiveInputId(previousActiveInputId);
+
       setChannels(previousChannels);
+
       toast.error(error.response?.data?.mesaj || "Yayın değiştirilemedi.");
     } finally {
       setActionLoading(false);
     }
   };
 
+  // ==============================================================
+  // TOPLU KAYNAK DEĞİŞTİR
+  // ==============================================================
+
   const handleBulkSourceChange = async (inputId) => {
-    if (selectedOutputs.length === 0) return;
+    if (selectedOutputs.length === 0) {
+      return;
+    }
 
     const previousActiveInputId = activeInputId;
+
     const previousChannels = channels;
 
     setActiveInputId(inputId);
+
     await fetchChannelsForInput(inputId);
+
     setActionLoading(true);
 
     try {
       await orchestrationService.topluKaynakDegistir({
         outputZoneIds: selectedOutputs.map((output) => output.id),
+
         inputSourceId: inputId,
+
         kullaniciId: KULLANICI_ID,
       });
 
@@ -222,7 +317,10 @@ const KontrolPaneli = () => {
           selectedOutputs.some(
             (selectedOutput) => selectedOutput.id === output.id,
           )
-            ? { ...output, guncelInputSourceId: inputId }
+            ? {
+                ...output,
+                guncelInputSourceId: inputId,
+              }
             : output,
         ),
       );
@@ -235,7 +333,9 @@ const KontrolPaneli = () => {
       );
     } catch (error) {
       setActiveInputId(previousActiveInputId);
+
       setChannels(previousChannels);
+
       toast.error(
         error.response?.data?.mesaj || "Toplu işlem sırasında bir hata oluştu.",
       );
@@ -244,21 +344,25 @@ const KontrolPaneli = () => {
     }
   };
 
+  // ==============================================================
+  // KANAL DEĞİŞTİR
+  // ==============================================================
+
   const handleChannelChange = async (channelId) => {
-    // Hiç seçim yoksa işlemi durdur
-    if (!selectedOutputs || selectedOutputs.length === 0) return;
+    if (!selectedOutputs || selectedOutputs.length === 0) {
+      return;
+    }
 
     setActionLoading(true);
 
     try {
-      // KRİTİK NOKTA: Kaç ekran seçilmiş olursa olsun (1 veya 10),
-      // hepsi aynı uyduya bağlıysa sadece İLK seçilen ekranın ID'si üzerinden
-      // tek bir komut göndermemiz yeterlidir.
       const hedefZoneId = selectedOutputs[0].id;
 
       await orchestrationService.kanalDegistir({
         outputZoneId: hedefZoneId,
+
         channelListId: channelId,
+
         kullaniciId: KULLANICI_ID,
       });
 
@@ -269,51 +373,28 @@ const KontrolPaneli = () => {
       setActionLoading(false);
     }
   };
-  /*
-  const handleBulkChannelChange = async (channelId) => {
-    if (selectedOutputs.length === 0) return;
-    setActionLoading(true);
 
-    try {
-      if (typeof orchestrationService.topluKanalDegistir === "function") {
-        await orchestrationService.topluKanalDegistir({
-          outputZoneIds: selectedOutputs.map((output) => output.id),
-          channelListId: channelId,
-          kullaniciId: KULLANICI_ID,
-        });
-      } else {
-        await Promise.all(
-          selectedOutputs.map((output) =>
-            orchestrationService.kanalDegistir({
-              outputZoneId: output.id,
-              channelListId: channelId,
-              kullaniciId: KULLANICI_ID,
-            }),
-          ),
-        );
-      }
-      toast.success(
-        `${selectedOutputs.length} bölgeye kanal sinyali başarıyla gönderildi.`,
-      );
-    } catch (error) {
-      toast.error(
-        error.response?.data?.mesaj || "Toplu kanal değiştirilemedi.",
-      );
-    } finally {
-      setActionLoading(false);
-    }
-  };
-*/
+  // ==============================================================
+  // TV KONTROL
+  // ==============================================================
+
   const handleTvControl = async (tusKodu) => {
-    if (selectedOutputs.length !== 1) return;
+    if (selectedOutputs.length !== 1) {
+      return;
+    }
+
     const singleOutput = selectedOutputs[0];
+
     setActionLoading(true);
 
     try {
       await orchestrationService.tekilTusGonder({
         outputZoneId: singleOutput.id,
-        tusKodu: tusKodu,
+
+        tusKodu,
+
         kullaniciId: KULLANICI_ID,
+
         tvKontroluMu: true,
       });
     } catch (error) {
@@ -323,17 +404,26 @@ const KontrolPaneli = () => {
     }
   };
 
+  // ==============================================================
+  // LED MOD DEĞİŞTİR
+  // ==============================================================
+
   const handleLedModeChange = async (targetMode) => {
-    if (selectedOutputs.length !== 1 || !selectedOutputs[0].ledProcessorId)
+    if (selectedOutputs.length !== 1 || !selectedOutputs[0].ledProcessorId) {
       return;
+    }
+
     const singleOutput = selectedOutputs[0];
+
     setActionLoading(true);
 
     try {
       await orchestrationService.changeLedMode({
         ledProcessorId: singleOutput.ledProcessorId,
-        targetMode: targetMode,
+
+        targetMode,
       });
+
       toast.success(
         targetMode === 1
           ? "Reklam Moduna (Internal) geçildi."
@@ -346,16 +436,21 @@ const KontrolPaneli = () => {
     }
   };
 
+  // ==============================================================
+  // LOADING
+  // ==============================================================
+
   if (loading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
+      <div className="flex min-h-[60vh] w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <FontAwesomeIcon
             icon={faSpinner}
             spin
-            className="text-5xl text-cyan-500"
+            className="text-4xl text-cyan-500 sm:text-5xl"
           />
-          <p className="text-slate-400 font-bold tracking-widest animate-pulse">
+
+          <p className="text-center text-xs font-bold tracking-[0.18em] text-slate-400 animate-pulse sm:text-sm sm:tracking-widest">
             SİSTEM BAŞLATILIYOR
           </p>
         </div>
@@ -363,30 +458,167 @@ const KontrolPaneli = () => {
     );
   }
 
-  return (
-    <div className="flex h-[calc(100vh-120px)] w-full overflow-hidden rounded-4xl border border-slate-700/60 bg-slate-900/60 shadow-2xl backdrop-blur-md animate-av-card-enter">
-      <OutputListSidebar
-        outputs={outputs}
-        matrices={matrices}
-        selectedOutputs={selectedOutputs}
-        onToggleSelect={toggleOutputSelection}
-        onSelectOne={handleSelectOne}
-      />
+  // ==============================================================
+  // JSX
+  // ==============================================================
 
-      <ZoneDetailPanel
-        selectedOutputs={selectedOutputs}
-        activeInputId={activeInputId}
-        inputs={inputs}
-        channels={channels}
-        actionLoading={actionLoading}
-        onSourceChange={handleSourceChange}
-        onBulkSourceChange={handleBulkSourceChange}
-        onChannelChange={handleChannelChange}
-        // onBulkChannelChange={handleBulkChannelChange}
-        onTvControl={handleTvControl}
-        onLedModeChange={handleLedModeChange}
-      />
-      <MacTakvimSidebar />
+  return (
+    <div
+      className="
+        w-full
+        min-w-0
+        animate-av-card-enter
+
+        xl:h-[calc(100dvh-128px)]
+      "
+    >
+      <div
+        className="
+          grid
+          w-full
+          min-w-0
+          grid-cols-1
+          gap-3
+
+          md:grid-cols-2
+
+          xl:h-full
+          xl:grid-cols-[240px_minmax(320px,1fr)_280px_260px]
+        "
+      >
+        {/* ========================================================
+            1. BÖLGELER
+        ======================================================== */}
+
+        <section
+          className="
+            h-[500px]
+            min-w-0
+            overflow-hidden
+            rounded-3xl
+            border
+            border-slate-700/60
+            bg-slate-900/60
+            shadow-xl
+            backdrop-blur-md
+
+            sm:h-[560px]
+
+            xl:h-full
+
+            [&>*]:!h-full
+            [&>*]:!w-full
+            [&>*]:!max-w-none
+          "
+        >
+          <OutputListSidebar
+            outputs={outputs}
+            matrices={matrices}
+            selectedOutputs={selectedOutputs}
+            onToggleSelect={toggleOutputSelection}
+            onSelectOne={handleSelectOne}
+          />
+        </section>
+
+        {/* ========================================================
+            2. BÖLGE DETAY / KONTROL
+        ======================================================== */}
+
+        <section
+          className="
+            min-h-[650px]
+            min-w-0
+            overflow-hidden
+            rounded-3xl
+            border
+            border-slate-700/60
+            bg-slate-900/60
+            shadow-xl
+            backdrop-blur-md
+
+            sm:min-h-[700px]
+
+            md:col-span-2
+
+            xl:col-span-1
+            xl:h-full
+            xl:min-h-0
+
+            [&>*]:!h-full
+            [&>*]:!w-full
+            [&>*]:!max-w-none
+          "
+        >
+          <ZoneDetailPanel
+            selectedOutputs={selectedOutputs}
+            activeInputId={activeInputId}
+            inputs={inputs}
+            channels={channels}
+            actionLoading={actionLoading}
+            onSourceChange={handleSourceChange}
+            onBulkSourceChange={handleBulkSourceChange}
+            onChannelChange={handleChannelChange}
+            onTvControl={handleTvControl}
+            onLedModeChange={handleLedModeChange}
+          />
+        </section>
+
+        {/* ========================================================
+            3. GÜNÜN MAÇLARI
+        ======================================================== */}
+
+        <section
+          className="
+            h-[520px]
+            min-w-0
+            overflow-hidden
+            rounded-3xl
+            border
+            border-slate-700/60
+            bg-slate-900/60
+            shadow-xl
+            backdrop-blur-md
+
+            sm:h-[560px]
+
+            xl:h-full
+
+            [&>*]:!h-full
+            [&>*]:!w-full
+            [&>*]:!max-w-none
+          "
+        >
+          <MacTakvimSidebar />
+        </section>
+
+        {/* ========================================================
+            4. KUMANDALAR
+        ======================================================== */}
+
+        <section
+          className="
+            h-[520px]
+            min-w-0
+            overflow-hidden
+            rounded-3xl
+            border
+            border-slate-700/60
+            bg-slate-900/60
+            shadow-xl
+            backdrop-blur-md
+
+            sm:h-[560px]
+
+            xl:h-full
+
+            [&>*]:!h-full
+            [&>*]:!w-full
+            [&>*]:!max-w-none
+          "
+        >
+          <KumandalarSidebar kullaniciId={KULLANICI_ID} />
+        </section>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using AVControl.Core.Dtos.FavoriTakim;
+﻿using AVControl.Core.Dtos.FavoriTakim;
 using AVControl.Core.Dtos.FavoriTakimDtos;
 using AVControl.Core.Entities;
 using AVControl.Core.Interfaces;
@@ -13,65 +12,193 @@ namespace AVControl.WEBAPI.Controllers
     public class FavoriTakimController : ControllerBase
     {
         private readonly IFavoriTakimService _service;
-        private readonly IMapper _mapper;
 
-        public FavoriTakimController(IFavoriTakimService service, IMapper mapper)
+        public FavoriTakimController(IFavoriTakimService service)
         {
             _service = service;
-            _mapper = mapper;
         }
+
+        // ------------------------------------------------------------
+        // LİSTE
+        // ------------------------------------------------------------
 
         [HttpGet("liste")]
         public async Task<IActionResult> Liste()
         {
-            var takimlar = await _service.TumunuGetirAsync();
-            var dtoList = _mapper.Map<IEnumerable<FavoriTakimListeDto>>(takimlar);
+            var takimlar =
+                await _service.TumunuLigleriyleGetirAsync();
+
+            var dtoList = takimlar.Select(takim =>
+                new FavoriTakimListeDto
+                {
+                    Id = takim.Id,
+                    TakimAdi = takim.TakimAdi,
+                    AktifMi = takim.AktifMi,
+
+                    Ligler = takim.FavoriTakimLigleri
+                        .Where(x => x.AktifMi)
+                        .Select(x => x.LigAdi)
+                        .OrderBy(x => x)
+                        .ToList()
+                })
+                .ToList();
+
             return Ok(dtoList);
         }
+
+        // ------------------------------------------------------------
+        // TEK TAKIM GETİR
+        // ------------------------------------------------------------
 
         [HttpGet("getir/{id}")]
         public async Task<IActionResult> Getir(int id)
         {
-            var takim = await _service.IdyeGoreGetirAsync(id);
-            if (takim == null) return NotFound("Takım bulunamadı.");
+            var takim =
+                await _service.IdyeGoreLigleriyleGetirAsync(id);
 
-            var dto = _mapper.Map<FavoriTakimListeDto>(takim);
+            if (takim == null)
+            {
+                return NotFound(new
+                {
+                    mesaj = "Takım bulunamadı."
+                });
+            }
+
+            var dto = new FavoriTakimListeDto
+            {
+                Id = takim.Id,
+                TakimAdi = takim.TakimAdi,
+                AktifMi = takim.AktifMi,
+
+                Ligler = takim.FavoriTakimLigleri
+                    .Where(x => x.AktifMi)
+                    .Select(x => x.LigAdi)
+                    .OrderBy(x => x)
+                    .ToList()
+            };
+
             return Ok(dto);
         }
 
+        // ------------------------------------------------------------
+        // EKLE
+        // ------------------------------------------------------------
+
         [Authorize(Roles = "Admin")]
         [HttpPost("ekle")]
-        public async Task<IActionResult> Ekle(FavoriTakimEkleDto dto)
+        public async Task<IActionResult> Ekle(
+            [FromBody] FavoriTakimEkleDto dto)
         {
-            var takimEntity = _mapper.Map<FavoriTakim>(dto);
-            await _service.EkleAsync(takimEntity);
+            if (string.IsNullOrWhiteSpace(dto.TakimAdi))
+            {
+                return BadRequest(new
+                {
+                    mesaj = "Takım adı boş olamaz."
+                });
+            }
 
-            return Ok(new { mesaj = "Favori takım başarıyla eklendi." });
+            var takimEntity = new FavoriTakim
+            {
+                TakimAdi = dto.TakimAdi.Trim(),
+                AktifMi = dto.AktifMi
+            };
+
+            try
+            {
+                await _service.EkleLigleriyleAsync(
+                    takimEntity,
+                    dto.Ligler);
+
+                return Ok(new
+                {
+                    mesaj = "Favori takım ve ligleri başarıyla eklendi."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    mesaj = ex.Message
+                });
+            }
         }
+
+        // ------------------------------------------------------------
+        // GÜNCELLE
+        // ------------------------------------------------------------
 
         [Authorize(Roles = "Admin")]
         [HttpPut("guncelle")]
-        public async Task<IActionResult> Guncelle(FavoriTakimGuncelleDto dto)
+        public async Task<IActionResult> Guncelle(
+            [FromBody] FavoriTakimGuncelleDto dto)
         {
-            var mevcutTakim = await _service.IdyeGoreGetirAsync(dto.Id);
-            if (mevcutTakim == null) return NotFound("Güncellenecek takım bulunamadı.");
+            if (string.IsNullOrWhiteSpace(dto.TakimAdi))
+            {
+                return BadRequest(new
+                {
+                    mesaj = "Takım adı boş olamaz."
+                });
+            }
 
-            _mapper.Map(dto, mevcutTakim);
-            await _service.GuncelleAsync(mevcutTakim);
+            var mevcutTakim =
+                await _service.IdyeGoreGetirAsync(dto.Id);
 
-            return Ok(new { mesaj = "Favori takım başarıyla güncellendi." });
+            if (mevcutTakim == null)
+            {
+                return NotFound(new
+                {
+                    mesaj = "Güncellenecek takım bulunamadı."
+                });
+            }
+
+            mevcutTakim.TakimAdi = dto.TakimAdi.Trim();
+            mevcutTakim.AktifMi = dto.AktifMi;
+
+            try
+            {
+                await _service.GuncelleLigleriyleAsync(
+                    mevcutTakim,
+                    dto.Ligler);
+
+                return Ok(new
+                {
+                    mesaj = "Favori takım ve ligleri başarıyla güncellendi."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    mesaj = ex.Message
+                });
+            }
         }
+
+        // ------------------------------------------------------------
+        // SİL
+        // ------------------------------------------------------------
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("sil/{id}")]
         public async Task<IActionResult> Sil(int id)
         {
-            var mevcutTakim = await _service.IdyeGoreGetirAsync(id);
-            if (mevcutTakim == null) return NotFound("Silinecek takım bulunamadı.");
+            var mevcutTakim =
+                await _service.IdyeGoreGetirAsync(id);
+
+            if (mevcutTakim == null)
+            {
+                return NotFound(new
+                {
+                    mesaj = "Silinecek takım bulunamadı."
+                });
+            }
 
             await _service.SilAsync(mevcutTakim);
 
-            return Ok(new { mesaj = "Favori takım başarıyla silindi." });
+            return Ok(new
+            {
+                mesaj = "Favori takım başarıyla silindi."
+            });
         }
     }
 }
