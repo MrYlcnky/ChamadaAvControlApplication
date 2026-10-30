@@ -13,9 +13,13 @@
         public virtual MatrixDevice? MatrixDevice { get; set; }
         public virtual LedProcessor? LedProcessor { get; set; }
 
-        public int? RemoteControlId { get; set; } 
+        public int? RemoteControlId { get; set; }
         public int? IrTransmitterId { get; set; }
         public virtual RemoteControl? RemoteControl { get; set; }
         public virtual IrTransmitter? IrTransmitter { get; set; }
+
+        // Aynı bölge birden fazla kullanıcıya atanabilir.
+        public ICollection<KullaniciBolge> KullaniciBolgeleri { get; set; }
+            = new List<KullaniciBolge>();
     }
 }

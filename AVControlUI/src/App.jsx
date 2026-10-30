@@ -13,6 +13,8 @@ import Kumandalar from "./pages/Kumandalar";
 import Kanallar from "./pages/ChannelList";
 import KontrolPaneli from "./pages/KontrolPaneli";
 import MacAyarlari from "./pages/MacAyarlari";
+import IslemLog from "./pages/IslemLog";
+import GelismisKumanda from "./pages/GelismisKumanda";
 
 function App() {
   return (
@@ -80,6 +82,22 @@ function App() {
             element={
               <AdminRoute>
                 <MacAyarlari />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="islem-loglari"
+            element={
+              <AdminRoute>
+                <IslemLog />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="gelismis-kumanda"
+            element={
+              <AdminRoute>
+                <GelismisKumanda />
               </AdminRoute>
             }
           />

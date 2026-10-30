@@ -24,10 +24,11 @@ namespace AVControl.Data.Context
 
         public DbSet<FavoriTakim> FavoriTakimlar { get; set; }
         public DbSet<FavoriLig> FavoriLigler { get; set; }
-
         public DbSet<FavoriTakimLig> FavoriTakimLigleri { get; set; }
-
         public DbSet<MacTakvim> MacTakvimler { get; set; }
+
+        // Kullanıcıya özel bölge yetkileri.
+        public DbSet<KullaniciBolge> KullaniciBolgeleri { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,14 +47,33 @@ namespace AVControl.Data.Context
                 .HasForeignKey(x => x.FavoriTakimId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Aynı takım + aynı lig ikinci kez eklenemesin.
             modelBuilder.Entity<FavoriTakimLig>()
-       .HasIndex(x => new
-       {
-           x.FavoriTakimId,
-           x.LigAdi
-       })
-       .IsUnique();
+                .HasIndex(x => new
+                {
+                    x.FavoriTakimId,
+                    x.LigAdi
+                })
+                .IsUnique();
+
+            // Her kullanıcı bir bölgeyi yalnızca bir defa alabilir.
+            modelBuilder.Entity<KullaniciBolge>(entity =>
+            {
+                entity.ToTable("KullaniciBolgeleri");
+                entity.HasKey(x => x.Id);
+
+                entity.HasIndex(x => new { x.KullaniciId, x.OutputZoneId })
+                    .IsUnique();
+
+                entity.HasOne(x => x.Kullanici)
+                    .WithMany(x => x.KullaniciBolgeleri)
+                    .HasForeignKey(x => x.KullaniciId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.OutputZone)
+                    .WithMany(x => x.KullaniciBolgeleri)
+                    .HasForeignKey(x => x.OutputZoneId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             modelBuilder.Entity<Kullanici>().HasData(
                 new Kullanici

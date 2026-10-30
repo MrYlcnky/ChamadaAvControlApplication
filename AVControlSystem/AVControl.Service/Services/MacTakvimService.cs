@@ -10,7 +10,7 @@ namespace AVControl.Service.Services
     public class MacTakvimService : GenericService<MacTakvim>, IMacTakvimService
     {
         private readonly IMapper _mapper;
-
+        private static readonly SemaphoreSlim SyncLock = new(1, 1);
         private readonly IGenericRepository<FavoriTakim> _favoriTakimRepo;
         private readonly IGenericRepository<FavoriLig> _favoriLigRepo;
         private readonly IGenericRepository<FavoriTakimLig> _favoriTakimLigRepo;
@@ -25,7 +25,6 @@ namespace AVControl.Service.Services
             : base(repository, unitOfWork)
         {
             _mapper = mapper;
-
             _favoriTakimRepo = favoriTakimRepo;
             _favoriLigRepo = favoriLigRepo;
             _favoriTakimLigRepo = favoriTakimLigRepo;
@@ -35,213 +34,257 @@ namespace AVControl.Service.Services
         // MAÇ VERİLERİNİ SENKRONİZE ET
         // ============================================================
 
+
         public async Task VerileriSenkronizeEtAsync(string tarih)
         {
-            // 1. Tarih işlemleri:
-            // Noktaları slash'a çevir ve doğrula
-            if (!string.IsNullOrWhiteSpace(tarih))
-            {
-                tarih = tarih.Replace(".", "/");
-            }
+            // Worker ve manuel yenileme aynı anda DB güncellemesin.
+            await SyncLock.WaitAsync();
 
-            var hedefTarih = string.IsNullOrWhiteSpace(tarih)
-                ? DateTime.Now
-                : DateTime.ParseExact(
-                    tarih,
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(tarih))
+                    tarih = tarih.Replace(".", "/");
+
+                var hedefTarih = string.IsNullOrWhiteSpace(tarih)
+                    ? DateTime.Now
+                    : DateTime.ParseExact(
+                        tarih,
+                        "dd/MM/yyyy",
+                        CultureInfo.InvariantCulture
+                    );
+
+                var tarihStr = hedefTarih.ToString(
                     "dd/MM/yyyy",
-                    CultureInfo.InvariantCulture);
+                    CultureInfo.InvariantCulture
+                );
 
-            var tarihStr = hedefTarih.ToString(
-                "dd/MM/yyyy",
-                CultureInfo.InvariantCulture);
-
-            // --------------------------------------------------------
-            // 2. HTTP İstemci Ayarları
-            // --------------------------------------------------------
-
-            var handler = new HttpClientHandler
-            {
-                AutomaticDecompression =
-                    System.Net.DecompressionMethods.GZip |
-                    System.Net.DecompressionMethods.Deflate |
-                    System.Net.DecompressionMethods.Brotli
-            };
-
-            using var client = new HttpClient(handler);
-
-            client.DefaultRequestHeaders.Add(
-                "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                "Chrome/126.0.0.0 Safari/537.36");
-
-            client.DefaultRequestHeaders.Add(
-                "Referer",
-                "https://arsiv.mackolik.com/Canli-Sonuclar");
-
-            client.DefaultRequestHeaders.Add(
-                "Accept",
-                "application/json, text/plain, */*");
-
-            client.DefaultRequestHeaders.Add(
-                "Cookie",
-                "m_site=1;");
-
-            // --------------------------------------------------------
-            // 3. Maçları Çek
-            // --------------------------------------------------------
-
-            var liveUrl =
-                $"https://vd.mackolik.com/livedata?date={Uri.EscapeDataString(tarihStr)}";
-
-            var liveResponse = await client.GetAsync(liveUrl);
-
-            var liveJsonString =
-                await liveResponse.Content.ReadAsStringAsync();
-
-            // --------------------------------------------------------
-            // 4. TV Kanallarını Çek
-            // --------------------------------------------------------
-
-            var tvUrl =
-                $"https://arsiv.mackolik.com/livescores/tvprogram.aspx?date={Uri.EscapeDataString(tarihStr)}";
-
-            var tvResponse = await client.GetAsync(tvUrl);
-
-            var tvJsonString =
-                await tvResponse.Content.ReadAsStringAsync();
-
-            if (!liveResponse.IsSuccessStatusCode ||
-                string.IsNullOrWhiteSpace(liveJsonString))
-            {
-                return;
-            }
-
-            var json = JsonNode.Parse(liveJsonString);
-
-            var tvJson =
-                !string.IsNullOrWhiteSpace(tvJsonString)
-                    ? JsonNode.Parse(tvJsonString)
-                    : null;
-
-            var macDizisi = json?["m"]?.AsArray();
-
-            if (macDizisi == null)
-            {
-                return;
-            }
-
-            // --------------------------------------------------------
-            // 5. Maçları DB'ye Yaz / Güncelle
-            // --------------------------------------------------------
-
-            foreach (var m in macDizisi)
-            {
-                string extId = m[0]?.ToString();
-
-                // Kanal Bilgilerini Birleştir
-                // 2. veya 3. kanal varsa ekle
-                var kanalListesi = new List<string>();
-
-                if (tvJson != null &&
-                    tvJson[extId] != null)
+                var handler = new HttpClientHandler
                 {
-                    var kanallar =
-                        tvJson[extId]?.AsArray();
+                    AutomaticDecompression =
+                        System.Net.DecompressionMethods.GZip |
+                        System.Net.DecompressionMethods.Deflate |
+                        System.Net.DecompressionMethods.Brotli
+                };
 
-                    if (kanallar != null)
+                using var client = new HttpClient(handler)
+                {
+                    Timeout = TimeSpan.FromSeconds(15)
+                };
+
+                client.DefaultRequestHeaders.Add(
+                    "User-Agent",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                    "Chrome/126.0.0.0 Safari/537.36"
+                );
+
+                client.DefaultRequestHeaders.Add(
+                    "Referer",
+                    "https://arsiv.mackolik.com/Canli-Sonuclar"
+                );
+
+                client.DefaultRequestHeaders.Add(
+                    "Accept",
+                    "application/json, text/plain, */*"
+                );
+
+                client.DefaultRequestHeaders.Add("Cookie", "m_site=1;");
+
+                var liveUrl =
+                    $"https://vd.mackolik.com/livedata?date={Uri.EscapeDataString(tarihStr)}";
+
+                var tvUrl =
+                    $"https://arsiv.mackolik.com/livescores/tvprogram.aspx?date={Uri.EscapeDataString(tarihStr)}";
+
+                // Canlı sonuçlar zorunlu.
+                using var liveResponse = await client.GetAsync(liveUrl);
+
+                liveResponse.EnsureSuccessStatusCode();
+
+                var liveJsonString =
+                    await liveResponse.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrWhiteSpace(liveJsonString))
+                    throw new Exception("Maçkolik canlı sonuç verisi boş geldi.");
+
+                var json = JsonNode.Parse(liveJsonString);
+                var macDizisi = json?["m"]?.AsArray();
+
+                if (macDizisi == null)
+                    throw new Exception("Maçkolik maç listesi bulunamadı.");
+
+                // TV programı isteğe bağlıdır.
+                // Bu servis hata verirse mevcut yayın bilgilerini koruyacağız.
+                JsonNode? tvJson = null;
+
+                try
+                {
+                    using var tvResponse = await client.GetAsync(tvUrl);
+
+                    if (tvResponse.IsSuccessStatusCode)
                     {
-                        foreach (var kanal in kanallar)
-                        {
-                            string kanalAdi =
-                                kanal?[0]?.ToString();
+                        var tvJsonString =
+                            await tvResponse.Content.ReadAsStringAsync();
 
-                            if (!string.IsNullOrWhiteSpace(kanalAdi))
+                        if (!string.IsNullOrWhiteSpace(tvJsonString))
+                            tvJson = JsonNode.Parse(tvJsonString);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(
+                        $"[MAC TAKVIM] TV programı alınamadı: {ex.Message}"
+                    );
+                }
+
+                // ========================================================
+                // BÜTÜN EXTERNAL ID'LERİ TOPLA
+                // ========================================================
+
+                var externalIds = macDizisi
+                    .Where(m => m?[0] != null)
+                    .Select(m => m![0]!.ToString())
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Distinct()
+                    .ToArray();
+
+                if (externalIds.Length == 0)
+                    return;
+
+                // Her maç için SQL çalıştırmak yerine TEK sorgu.
+                var mevcutKayitlar =
+                    await _repository.KosulaGoreGetirAsync(
+                        x => externalIds.Contains(x.ExternalId)
+                    );
+
+                var mevcutMacSozlugu = mevcutKayitlar
+                    .GroupBy(x => x.ExternalId)
+                    .ToDictionary(
+                        group => group.Key,
+                        group => group.First()
+                    );
+
+                // ========================================================
+                // MAÇLARI EKLE VEYA GÜNCELLE
+                // ========================================================
+
+                foreach (var m in macDizisi)
+                {
+                    if (m == null || m[0] == null)
+                        continue;
+
+                    string extId = m[0]?.ToString() ?? string.Empty;
+
+                    if (string.IsNullOrWhiteSpace(extId))
+                        continue;
+
+                    // Ülke alanını (örn. Türkiye) lig adı olarak kaydetme.
+                    // Livedata şeması değişebildiğinden doğrulanmış bir lig
+                    // ismi bulamazsak "Diğer" kullanır ve teşhis bilgisi basarız.
+                    string ligAdi = LigAdiniOku(m);
+
+                    // GEÇİCİ TEŞHİS: Konsoldaki [LIG DEBUG] satırını paylaş.
+                    // Lig dizisinin tamamını gösterir, hiçbir veri değiştirmez.
+                    var evAdi = m[2]?.ToString() ?? string.Empty;
+                    var depAdi = m[4]?.ToString() ?? string.Empty;
+
+                    if (evAdi.Contains("Galatasaray", StringComparison.OrdinalIgnoreCase) ||
+                        depAdi.Contains("Galatasaray", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine(
+                            $"[LIG DEBUG] {evAdi} - {depAdi} | " +
+                            $"m[36]={LigVerisiniYazdir(m)} | " +
+                            $"Seçilen lig={ligAdi}"
+                        );
+                    }
+
+                    var kanalListesi = new List<string>();
+
+                    if (tvJson != null && tvJson[extId] != null)
+                    {
+                        var kanallar = tvJson[extId]?.AsArray();
+
+                        if (kanallar != null)
+                        {
+                            foreach (var kanal in kanallar)
                             {
-                                kanalListesi.Add(kanalAdi);
+                                string? kanalAdi = kanal?[0]?.ToString();
+
+                                if (!string.IsNullOrWhiteSpace(kanalAdi))
+                                    kanalListesi.Add(kanalAdi);
                             }
                         }
                     }
-                }
 
-                string kanalBilgisi =
-                    string.Join(", ", kanalListesi);
+                    string kanalBilgisi = string.Join(", ", kanalListesi);
 
-                var mevcutMac =
-                    (
-                        await _repository.KosulaGoreGetirAsync(
-                            x => x.ExternalId == extId)
-                    )
-                    .FirstOrDefault();
+                    string skor = $"{m[12]}-{m[13]}";
 
-                // ----------------------------------------------------
-                // Mevcut maç varsa güncelle
-                // ----------------------------------------------------
-
-                if (mevcutMac != null)
-                {
-                    mevcutMac.Skor =
-                        $"{m[12]}-{m[13]}";
-
-                    mevcutMac.Durum =
+                    string durum =
                         !string.IsNullOrWhiteSpace(m[6]?.ToString())
-                            ? m[6].ToString()
-                            : m[16]?.ToString();
+                            ? m[6]!.ToString()
+                            : m[16]?.ToString() ?? string.Empty;
 
-                    mevcutMac.YayinKanali =
-                        kanalBilgisi;
+                    mevcutMacSozlugu.TryGetValue(
+                        extId,
+                        out var mevcutMac
+                    );
 
-                    mevcutMac.MacTarihi =
-                        hedefTarih.Date;
+                    if (mevcutMac != null)
+                    {
+                        mevcutMac.Skor = skor;
+                        mevcutMac.Durum = durum;
+                        mevcutMac.MacTarihi = hedefTarih.Date;
 
-                    _repository.Guncelle(mevcutMac);
-                }
+                        // Mevcut maçların LigAdi alanını da güncelle.
+                        if (ligAdi != "Diğer")
+                        {
+                            mevcutMac.LigAdi = ligAdi;
+                        }
+                        else if (string.IsNullOrWhiteSpace(mevcutMac.LigAdi) ||
+                                 Normalize(mevcutMac.LigAdi) == "türkiye")
+                        {
+                            // Eski sürümün yanlışlıkla kaydettiği "Türkiye"
+                            // bilgisini doğru lig adıymış gibi bırakma.
+                            mevcutMac.LigAdi = "Diğer";
+                        }
 
-                // ----------------------------------------------------
-                // Maç yoksa yeni ekle
-                // ----------------------------------------------------
+                        // TV verisi alınamadıysa eski kanal bilgisi silinmesin.
+                        if (tvJson != null)
+                            mevcutMac.YayinKanali = kanalBilgisi;
 
-                else
-                {
-                    await _repository.EkleAsync(
-                        new MacTakvim
+                        _repository.Guncelle(mevcutMac);
+                    }
+                    else
+                    {
+                        var yeniMac = new MacTakvim
                         {
                             ExternalId = extId,
-
-                            EvSahibi =
-                                m[2]?.ToString()
-                                ?? "Bilinmiyor",
-
-                            Deplasman =
-                                m[4]?.ToString()
-                                ?? "Bilinmiyor",
-
-                            Skor =
-                                $"{m[12]}-{m[13]}",
-
-                            Durum =
-                                !string.IsNullOrWhiteSpace(
-                                    m[6]?.ToString())
-                                    ? m[6].ToString()
-                                    : m[16]?.ToString(),
-
-                            LigAdi =
-                                m[36]?[1]?.ToString()
-                                ?? "Diğer",
-
-                            YayinKanali =
-                                kanalBilgisi,
-
-                            MacTarihi =
-                                hedefTarih.Date,
-
+                            EvSahibi = m[2]?.ToString() ?? "Bilinmiyor",
+                            Deplasman = m[4]?.ToString() ?? "Bilinmiyor",
+                            Skor = skor,
+                            Durum = durum,
+                            LigAdi = ligAdi,
+                            YayinKanali = kanalBilgisi,
+                            MacTarihi = hedefTarih.Date,
                             AktifMi = true
-                        });
-                }
-            }
+                        };
 
-            await _unitOfWork.KaydetAsync();
+                        await _repository.EkleAsync(yeniMac);
+
+                        mevcutMacSozlugu[extId] = yeniMac;
+                    }
+                }
+
+                // Her maç için değil, bütün değişiklikler için bir kez.
+                await _unitOfWork.KaydetAsync();
+            }
+            finally
+            {
+                SyncLock.Release();
+            }
         }
+
 
         // ============================================================
         // GÜNÜN FAVORİ MAÇLARI
@@ -258,8 +301,7 @@ namespace AVControl.Service.Services
                 (
                     await _repository.KosulaGoreGetirAsync(
                         m =>
-                            m.MacTarihi.Date == tarih.Date &&
-                            m.AktifMi)
+                            m.MacTarihi >= tarih.Date && m.MacTarihi < tarih.Date.AddDays(1) && m.AktifMi)
                 )
                 .ToList();
 
@@ -331,9 +373,10 @@ namespace AVControl.Service.Services
                             }
 
                             // Takım bu maçta oynuyor mu?
+                            // Tam eşleşme: Galatasaray, Galatasaray U19 değildir.
                             var takimBuMactaMi =
-                                evSahibi.Contains(takimAdi) ||
-                                deplasman.Contains(takimAdi);
+                                evSahibi == takimAdi ||
+                                deplasman == takimAdi;
 
                             if (!takimBuMactaMi)
                             {
@@ -550,19 +593,16 @@ namespace AVControl.Service.Services
                     m[13]?.ToString()
                     ?? "0";
 
-                string ligAdi =
-                    "Diğer";
+                string ligAdi = LigAdiniOku(m);
 
-                try
+                if (evSahibi.Contains("Galatasaray", StringComparison.OrdinalIgnoreCase) ||
+                    deplasman.Contains("Galatasaray", StringComparison.OrdinalIgnoreCase))
                 {
-                    ligAdi =
-                        m[36]?[1]?.ToString()
-                        ?? "Diğer";
-                }
-                catch
-                {
-                    ligAdi =
-                        "Diğer";
+                    Console.WriteLine(
+                        $"[LIG DEBUG DIRECT] {evSahibi} - {deplasman} | " +
+                        $"m[36]={LigVerisiniYazdir(m)} | " +
+                        $"Seçilen lig={ligAdi}"
+                    );
                 }
 
                 liste.Add(
@@ -605,18 +645,125 @@ namespace AVControl.Service.Services
                         new CultureInfo("tr-TR"));
         }
 
-        private static bool LigEslesiyor(
-            string macLigi,
-            string seciliLig)
+        // ============================================================
+        // LİG ADINI GÜVENLİ OKU / TEŞHİS
+        // ============================================================
+
+        private static string LigVerisiniYazdir(JsonNode? mac)
         {
-            if (string.IsNullOrWhiteSpace(macLigi) ||
-                string.IsNullOrWhiteSpace(seciliLig))
+            try
             {
-                return false;
+                if (mac is JsonArray dizi && dizi.Count > 36)
+                    return dizi[36]?.ToJsonString() ?? "null";
+            }
+            catch
+            {
+                // Tanılama başarısız olursa senkronizasyon bozulmasın.
             }
 
-            return macLigi.Contains(seciliLig) ||
-                   seciliLig.Contains(macLigi);
+            return "m[36] bulunamadı";
+        }
+
+        private static string LigAdiniOku(JsonNode? mac)
+        {
+            if (mac is not JsonArray macDizisi || macDizisi.Count <= 36)
+                return "Diğer";
+
+            var ligVerisi = macDizisi[36];
+            var adaylar = new List<string>();
+
+            if (ligVerisi is JsonArray ligDizisi)
+            {
+                // Eski Maçkolik örneklerinde 9 numaralı indeks "lig"
+                // bilgisi için kullanılmıştır; ama bazı sürümlerde
+                // kısaltma döner. Bu yüzden tüm alanları inceliyoruz.
+                foreach (var parca in ligDizisi)
+                {
+                    if (parca is JsonValue)
+                    {
+                        var metin = parca.ToString().Trim();
+                        if (LigAdiGibiGorunuyorMu(metin))
+                            adaylar.Add(metin);
+                    }
+                }
+            }
+            else if (ligVerisi is JsonObject ligNesnesi)
+            {
+                foreach (var ad in new[]
+                {
+                    "competitionName", "leagueName", "name", "title", "ligAdi"
+                })
+                {
+                    var metin = ligNesnesi[ad]?.ToString()?.Trim();
+                    if (LigAdiGibiGorunuyorMu(metin))
+                        adaylar.Add(metin!);
+                }
+            }
+
+            // Sponsor adı dahil en açıklayıcı tam lig ismini tercih et.
+            // Örn. "Trendyol Süper Lig", "Süper Lig" yerine seçilir.
+            return adaylar
+                .OrderByDescending(x => x.Length)
+                .FirstOrDefault() ?? "Diğer";
+        }
+
+        private static bool LigAdiGibiGorunuyorMu(string? deger)
+        {
+            if (string.IsNullOrWhiteSpace(deger))
+                return false;
+
+            var metin = Normalize(deger);
+            if (metin.Length < 4)
+                return false;
+
+            // Salt "Türkiye", "İngiltere" gibi ülke adları lig değildir.
+            // Gerçek lig adı tespit edilemezse yanlış kategoriye yazmayız.
+            string[] ligIfadeleri =
+            {
+                "lig", "league", "kupa", "cup", "champion",
+                "premier", "serie", "bundesliga", "eredivisie",
+                "laliga", "division", "u19", "u21", "elit",
+                "conference", "libertadores", "süper", "super"
+            };
+
+            return ligIfadeleri.Any(x => metin.Contains(x));
+        }
+
+        private static string LigKarsilastirmaAdi(string? ligAdi)
+        {
+            var ad = Normalize(ligAdi);
+
+            // Aynı yarışmanın sponsorluk / ülke ön ekini normalize et.
+            // Bu işlem, "U19" ile "Süper Lig"i birleştirmez.
+            bool degisti;
+            do
+            {
+                degisti = false;
+                foreach (var onEk in new[]
+                {
+                    "türkiye ", "turkiye ", "trendyol "
+                })
+                {
+                    if (ad.StartsWith(onEk, StringComparison.Ordinal))
+                    {
+                        ad = ad[onEk.Length..].Trim();
+                        degisti = true;
+                    }
+                }
+            } while (degisti);
+
+            return ad;
+        }
+
+        private static bool LigEslesiyor(string macLigi, string seciliLig)
+        {
+            var mac = LigKarsilastirmaAdi(macLigi);
+            var secili = LigKarsilastirmaAdi(seciliLig);
+
+            // Contains kullanma: Süper Lig, U19 Süper Lig değildir.
+            return !string.IsNullOrWhiteSpace(mac) &&
+                   !string.IsNullOrWhiteSpace(secili) &&
+                   string.Equals(mac, secili, StringComparison.Ordinal);
         }
     }
 }

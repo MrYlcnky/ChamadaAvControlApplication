@@ -111,37 +111,56 @@ namespace AVControl.WEBAPI.Controllers
             }
         }
 
+
         [AllowAnonymous]
         [HttpGet("gunun-maclari")]
-        public async Task<IActionResult> GununMaclari([FromQuery] string? tarih)
+        public async Task<IActionResult> GununMaclari(
+            [FromQuery] string? tarih)
         {
             try
             {
-                // Kullanıcı veya sistem nokta gönderirse slash yapalım
-                if (!string.IsNullOrWhiteSpace(tarih)) tarih = tarih.Replace(".", "/");
+                DateTime dt = DateTime.Now;
 
-                // 1. Tarihi belirle
-                DateTime dt = string.IsNullOrWhiteSpace(tarih)
-                              ? DateTime.Now
-                              : DateTime.ParseExact(tarih, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                if (!string.IsNullOrWhiteSpace(tarih))
+                {
+                    if (!DateTime.TryParseExact(
+                        tarih.Replace(".", "/"),
+                        "dd/MM/yyyy",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out dt))
+                    {
+                        return BadRequest(new
+                        {
+                            mesaj = "Geçersiz tarih. dd/MM/yyyy formatını kullanın."
+                        });
+                    }
+                }
 
-                // 2. ToString yaparken InvariantCulture kullanıyoruz ki sunucu "." yapmasın
-                string guvenliTarihStr = dt.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+                // ÖNEMLİ:
+                // Burada artık Maçkolik senkronizasyonu YOK.
+                // Direkt veritabanındaki favori maçları getiriyoruz.
+                var maclar =
+                    await _service.GununFavoriMaclariniGetirAsync(dt);
 
-                // Önce senkronize et
-                await _service.VerileriSenkronizeEtAsync(guvenliTarihStr);
+                var result =
+                    _mapper.Map<IEnumerable<MacTakvimListeDto>>(maclar);
 
-                // Filtreli getir
-                var maclar = await _service.GununFavoriMaclariniGetirAsync(dt);
-
-                return Ok(_mapper.Map<IEnumerable<MacTakvimListeDto>>(maclar));
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[CONTROLLER HATA] GununMaclari: {ex.Message}");
-                return StatusCode(500, new { mesaj = "Maçlar yüklenirken bir hata oluştu.", detay = ex.Message });
+                Console.WriteLine(
+                    $"[MAC TAKVIM] Listeleme hatası: {ex.Message}"
+                );
+
+                return StatusCode(500, new
+                {
+                    mesaj = "Maçlar yüklenirken hata oluştu."
+                });
             }
         }
+
 
         // TEST ENDPOINT - DIRECT
         [AllowAnonymous]

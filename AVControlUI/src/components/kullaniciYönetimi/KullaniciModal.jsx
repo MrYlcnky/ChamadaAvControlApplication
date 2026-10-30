@@ -8,7 +8,17 @@ import {
   faHashtag,
   faSpinner,
   faCheck,
+  faCircleInfo,
 } from "@fortawesome/free-solid-svg-icons";
+
+const fieldClass =
+  "w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/10 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200";
+
+const FieldLabel = ({ children }) => (
+  <span className="mb-1.5 block pl-0.5 text-xs font-semibold text-gray-500 dark:text-slate-400">
+    {children}
+  </span>
+);
 
 const KullaniciModal = ({
   isOpen,
@@ -21,200 +31,182 @@ const KullaniciModal = ({
 }) => {
   if (!isOpen) return null;
 
+  const isNewUser = modalMode === "ekle";
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Modal Arka Planı (Tıklayınca Kapanır) */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5">
       <div
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-        onClick={closeModal}
+        className="absolute inset-0 bg-slate-950/75 backdrop-blur-md"
+        onClick={actionLoading ? undefined : closeModal}
       />
-
-      {/* Modal Kartı */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-slate-700 overflow-hidden animate-av-card-enter">
-        {/* Modal Başlık */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-            {modalMode === "ekle"
-              ? "Yeni Kullanıcı Ekle"
-              : "Kullanıcıyı Düzenle"}
-          </h3>
-          <button
-            onClick={closeModal}
-            className="text-gray-400 hover:text-red-500 transition-colors"
-          >
-            <FontAwesomeIcon icon={faXmark} className="text-xl" />
-          </button>
-        </div>
-
-        {/* Modal Form İçeriği */}
-        <form onSubmit={handleSubmit} className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-            <div className="relative group">
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 pl-1">
-                Ad
-              </label>
-              <div className="absolute top-[28px] left-0 pl-3 flex items-center pointer-events-none">
-                <FontAwesomeIcon
-                  icon={faAddressCard}
-                  className="text-gray-400 group-focus-within:text-blue-500"
-                />
-              </div>
-              <input
-                type="text"
-                name="ad"
-                value={formData.ad}
-                onChange={handleChange}
-                className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-            </div>
-
-            <div className="relative group">
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 pl-1">
-                Soyad
-              </label>
-              <div className="absolute top-[28px] left-0 pl-3 flex items-center pointer-events-none">
-                <FontAwesomeIcon
-                  icon={faAddressCard}
-                  className="text-gray-400 group-focus-within:text-blue-500"
-                />
-              </div>
-              <input
-                type="text"
-                name="soyad"
-                value={formData.soyad}
-                onChange={handleChange}
-                className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-            </div>
-
-            <div className="relative group">
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 pl-1">
-                Kullanıcı Adı *
-              </label>
-              <div className="absolute top-[28px] left-0 pl-3 flex items-center pointer-events-none">
-                <FontAwesomeIcon
-                  icon={faUser}
-                  className="text-gray-400 group-focus-within:text-blue-500"
-                />
-              </div>
-              <input
-                type="text"
-                name="kullaniciAdi"
-                value={formData.kullaniciAdi}
-                onChange={handleChange}
-                required
-                className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
-              />
-            </div>
-
-            {/* SADECE 2 ROL İÇERECEK ŞEKİLDE DÜZENLENDİ */}
-            <div className="relative group">
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 pl-1">
-                Rol *
-              </label>
-              <div className="absolute top-[28px] left-0 pl-3 flex items-center pointer-events-none">
-                <FontAwesomeIcon
-                  icon={faUserShield}
-                  className="text-gray-400 group-focus-within:text-blue-500"
-                />
-              </div>
-              <select
-                name="rol"
-                value={formData.rol}
-                onChange={handleChange}
-                className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer"
-              >
-                <option value="1">Admin</option>
-                <option value="2">Kullanıcı</option>
-              </select>
-            </div>
-
-            <div className="relative group">
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 pl-1">
-                Bilgisayar Şifresi{" "}
-                {modalMode === "ekle" ? "*" : "(Değişmeyecekse boş bırak)"}
-              </label>
-              <div className="absolute top-[28px] left-0 pl-3 flex items-center pointer-events-none">
-                <FontAwesomeIcon
-                  icon={faLock}
-                  className="text-gray-400 group-focus-within:text-blue-500"
-                />
-              </div>
-              <input
-                type="text"
-                name="sifre"
-                value={formData.sifre}
-                onChange={handleChange}
-                required={modalMode === "ekle"}
-                className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
-                placeholder={
-                  modalMode === "duzenle" ? "Yeni şifre belirle" : "Şifre girin"
-                }
-              />
-            </div>
-
-            <div className="relative group">
-              <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1 pl-1">
-                Kiosk Pin Kodu
-              </label>
-              <div className="absolute top-[28px] left-0 pl-3 flex items-center pointer-events-none">
-                <FontAwesomeIcon
-                  icon={faHashtag}
-                  className="text-gray-400 group-focus-within:text-blue-500"
-                />
-              </div>
-              <input
-                type="number"
-                name="pinKodu"
-                value={formData.pinKodu}
-                onChange={handleChange}
-                className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
-                placeholder="Örn: 1453"
-              />
-            </div>
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label={
+          isNewUser ? "Yeni kullanıcı oluştur" : "Kullanıcıyı düzenle"
+        }
+        className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+      >
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/80 px-5 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-800/50">
+          <div>
+            <h3 className="text-lg font-extrabold text-gray-800 dark:text-white">
+              {isNewUser ? "Yeni Kullanıcı Oluştur" : "Kullanıcıyı Düzenle"}
+            </h3>
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
+              {isNewUser
+                ? "Önce hesabı oluştur; bölge yetkilerini ardından kullanıcı listesinden ata."
+                : "Hesap bilgilerini düzenle. Bölge atamaları ayrı pencereden yönetilir."}
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={closeModal}
+            disabled={actionLoading}
+            aria-label="Pencereyi kapat"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-200 text-gray-500 transition hover:bg-gray-100 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700"
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        </header>
 
-          {/* Aktiflik Switch */}
-          <div className="flex items-center gap-3 mb-8">
-            <label className="relative inline-flex items-center cursor-pointer">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label>
+                <FieldLabel>
+                  <FontAwesomeIcon icon={faAddressCard} className="mr-1.5" /> Ad
+                </FieldLabel>
+                <input
+                  type="text"
+                  name="ad"
+                  value={formData.ad}
+                  onChange={handleChange}
+                  className={fieldClass}
+                />
+              </label>
+              <label>
+                <FieldLabel>Soyad</FieldLabel>
+                <input
+                  type="text"
+                  name="soyad"
+                  value={formData.soyad}
+                  onChange={handleChange}
+                  className={fieldClass}
+                />
+              </label>
+              <label>
+                <FieldLabel>
+                  <FontAwesomeIcon icon={faUser} className="mr-1.5" /> Kullanıcı
+                  Adı *
+                </FieldLabel>
+                <input
+                  type="text"
+                  name="kullaniciAdi"
+                  value={formData.kullaniciAdi}
+                  onChange={handleChange}
+                  required
+                  className={fieldClass}
+                />
+              </label>
+              <label>
+                <FieldLabel>
+                  <FontAwesomeIcon icon={faUserShield} className="mr-1.5" /> Rol
+                  *
+                </FieldLabel>
+                <select
+                  name="rol"
+                  value={formData.rol}
+                  onChange={handleChange}
+                  required
+                  className={fieldClass}
+                >
+                  <option value="1">Admin</option>
+                  <option value="2">Normal Kullanıcı</option>
+                </select>
+              </label>
+              <label>
+                <FieldLabel>
+                  <FontAwesomeIcon icon={faLock} className="mr-1.5" />
+                  Şifre {isNewUser ? "*" : "(Değişmeyecekse boş bırak)"}
+                </FieldLabel>
+                <input
+                  type="password"
+                  name="sifre"
+                  autoComplete="new-password"
+                  value={formData.sifre}
+                  onChange={handleChange}
+                  required={isNewUser}
+                  placeholder={
+                    isNewUser ? "Şifre oluştur" : "Yeni şifre (isteğe bağlı)"
+                  }
+                  className={fieldClass}
+                />
+              </label>
+              <label>
+                <FieldLabel>
+                  <FontAwesomeIcon icon={faHashtag} className="mr-1.5" /> Kiosk
+                  PIN Kodu
+                </FieldLabel>
+                <input
+                  type="number"
+                  name="pinKodu"
+                  value={formData.pinKodu}
+                  onChange={handleChange}
+                  placeholder="Örn. 1453"
+                  className={fieldClass}
+                />
+              </label>
+            </div>
+
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 dark:border-slate-700 dark:bg-slate-950/60">
               <input
                 type="checkbox"
                 name="aktifMi"
-                checked={formData.aktifMi}
+                checked={Boolean(formData.aktifMi)}
                 onChange={handleChange}
-                className="sr-only peer"
+                className="h-4 w-4 accent-cyan-500"
               />
-              <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500"></div>
+              <span className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                Hesap Aktif
+              </span>
             </label>
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Hesap Aktif
-            </span>
+
+            <div className="flex items-start gap-2 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3 text-xs leading-relaxed text-cyan-700 dark:text-cyan-200">
+              <FontAwesomeIcon
+                icon={faCircleInfo}
+                className="mt-0.5 shrink-0"
+              />
+              <p>
+                {isNewUser
+                  ? "Hesap kaydedildikten sonra Kullanıcı Yönetimi listesindeki Bölge Yetkileri butonuyla bölge atayabilirsin."
+                  : "Bölge eklemek veya kaldırmak için kullanıcı listesindeki Bölge Yetkileri butonunu kullan."}
+              </p>
+            </div>
           </div>
 
-          {/* Butonlar */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-slate-800">
+          <footer className="flex shrink-0 items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/80 px-5 py-4 sm:px-6 dark:border-slate-800 dark:bg-slate-900">
             <button
               type="button"
               onClick={closeModal}
-              className="px-5 py-2 rounded-lg text-sm font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              disabled={actionLoading}
+              className="rounded-xl px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-200 disabled:opacity-50 dark:text-slate-400 dark:hover:bg-slate-800"
             >
               İptal
             </button>
             <button
               type="submit"
               disabled={actionLoading}
-              className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-70 transition-colors shadow-lg shadow-blue-500/30"
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-cyan-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {actionLoading ? (
-                <FontAwesomeIcon icon={faSpinner} spin />
-              ) : (
-                <FontAwesomeIcon icon={faCheck} />
-              )}
-              <span>{modalMode === "ekle" ? "Kaydet" : "Güncelle"}</span>
+              <FontAwesomeIcon
+                icon={actionLoading ? faSpinner : faCheck}
+                spin={actionLoading}
+              />
+              {isNewUser ? "Kullanıcıyı Oluştur" : "Güncelle"}
             </button>
-          </div>
+          </footer>
         </form>
-      </div>
+      </section>
     </div>
   );
 };

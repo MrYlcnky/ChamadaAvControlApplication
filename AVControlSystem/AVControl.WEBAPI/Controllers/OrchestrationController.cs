@@ -22,6 +22,8 @@ namespace AVControl.WEBAPI.Controllers
         private readonly ILedProcessorService _ledProcessorService;
         private readonly IOutputZoneService _outputZoneService;
         private readonly IRemoteControlService _remoteControlService;
+        private readonly IBolgeYetkiService _bolgeYetkiService;
+
 
         public OrchestrationController(
             IAVOrchestrationService orchestrationService,
@@ -31,7 +33,8 @@ namespace AVControl.WEBAPI.Controllers
             NovastarService novastarService,
             ILedProcessorService ledProcessorService,
             IOutputZoneService outputZoneService,
-            IRemoteControlService remoteControlService)
+            IRemoteControlService remoteControlService,
+            IBolgeYetkiService bolgeYetkiService)
         {
             _orchestrationService = orchestrationService;
             _commandService = commandService;
@@ -41,6 +44,7 @@ namespace AVControl.WEBAPI.Controllers
             _ledProcessorService = ledProcessorService;
             _outputZoneService = outputZoneService;
             _remoteControlService = remoteControlService;
+            _bolgeYetkiService = bolgeYetkiService;
         }
 
         // ------------------------------------------------------------
@@ -161,6 +165,34 @@ namespace AVControl.WEBAPI.Controllers
             });
         }
 
+        [HttpGet("bolge-canli-kaynak/{outputZoneId:int}")]
+        public async Task<IActionResult> GetBolgeCanliKaynak(int outputZoneId)
+        {
+            var bolge = await _outputZoneService.IdyeGoreGetirAsync(outputZoneId);
+
+            if (bolge == null)
+                return NotFound(new { mesaj = "Bölge bulunamadı." });
+
+            var matrix = await _matrixDeviceService.IdyeGoreGetirAsync(
+                bolge.MatrixDeviceId
+            );
+
+            if (matrix == null)
+                return NotFound(new { mesaj = "Matrix bulunamadı." });
+
+            var (success, inputPort) =
+                await _commandService.GetMatrixOutputRouteAsync(
+                    matrix,
+                    bolge.PortKodu
+                );
+
+            return Ok(new
+            {
+                baglantiBasarili = success,
+                bagliOlduguGiris = inputPort
+            });
+        }
+
         // ------------------------------------------------------------
         // MATRIX CANLI DURUM
         // ------------------------------------------------------------
@@ -257,77 +289,99 @@ namespace AVControl.WEBAPI.Controllers
         // KONTROL PANELİ BÖLGELERİ
         // ------------------------------------------------------------
 
+
         [HttpGet("kontrol-paneli-bolgeler")]
         public async Task<IActionResult> GetControlPanelZones()
         {
-            var userRole = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.Role)
-                ?.Value;
+            bool isAdmin =
+                User.IsInRole("Admin") || User.IsInRole("1");
 
-            var zones =
-                await _outputZoneService.TumunuGetirAsync();
+            // JWT üzerinden giriş yapan kullanıcıya ait
+            // yetkili OutputZone ID'lerini getir.
+            var yetkiliBolgeIds =
+                await _bolgeYetkiService.YetkiliBolgeIdleriAsync(User);
+
+            var zones = await _outputZoneService.TumunuGetirAsync();
 
             var allLedProcessors =
                 await _ledProcessorService.TumunuGetirAsync();
 
-            var result = zones.Select(z =>
-            {
-                var led = z.LedProcessorId != null
-                    ? allLedProcessors.FirstOrDefault(
-                        l => l.Id == z.LedProcessorId)
-                    : null;
+            var ledDictionary = allLedProcessors
+                .ToDictionary(x => x.Id);
 
-                return new
+            var result = zones
+                .Where(z =>
                 {
-                    z.Id,
-                    z.BolgeAdi,
-                    z.MatrixDeviceId,
-                    z.PortKodu,
-                    z.AktifMi,
-                    z.RemoteControlId,
-                    z.GuncelInputSourceId,
-                    z.GuncelChannelListId,
-                    z.LedProcessorId,
-                    z.IrTransmitterId,
+                    // Admin tüm bölgeleri görebilir.
+                    if (isAdmin)
+                        return true;
 
-                    LedProcessorAdi =
-                        led != null
-                            ? led.CihazAdi
-                            : null,
+                    // Normal kullanıcıda bölge aktif olmalı.
+                    if (!z.AktifMi)
+                        return false;
 
-                    ViplexKontroluVarMi =
-                        led != null &&
-                        led.ViplexKontroluVarMi,
+                    // Kullanıcıya özel atama bulunmalı.
+                    if (!yetkiliBolgeIds.Contains(z.Id))
+                        return false;
 
-                    KullanicidaGosterilsinMi =
-                        led == null ||
-                        led.KullanicidaGosterilsinMi,
+                    // Bölgenin bağlı olduğu LED işlemcisi varsa
+                    // "Kullanıcı Görsün Mü?" ayarı açık olmalı.
+                    if (z.LedProcessorId.HasValue)
+                    {
+                        if (!ledDictionary.TryGetValue(
+                            z.LedProcessorId.Value,
+                            out var led))
+                        {
+                            return false;
+                        }
 
-                    CihazGorselUrl =
-                        led != null
-                            ? led.CihazGorselUrl
-                            : null
-                };
-            }).ToList();
+                        if (!led.KullanicidaGosterilsinMi)
+                            return false;
+                    }
 
-            // Admin tüm bölgeleri görür
-            if (userRole == "Admin" || userRole == "1")
-            {
-                return Ok(result);
-            }
+                    return true;
+                })
+                .Select(z =>
+                {
+                    LedProcessor? led = null;
 
-            // Kullanıcı yalnızca gösterilmesi izin verilen bölgeleri görür
-            if (userRole == "Kullanici" || userRole == "2")
-            {
-                var kullaniciResult = result
-                    .Where(x => x.KullanicidaGosterilsinMi)
-                    .ToList();
+                    if (z.LedProcessorId.HasValue)
+                    {
+                        ledDictionary.TryGetValue(
+                            z.LedProcessorId.Value,
+                            out led);
+                    }
 
-                return Ok(kullaniciResult);
-            }
+                    return new
+                    {
+                        z.Id,
+                        z.BolgeAdi,
+                        z.MatrixDeviceId,
+                        z.PortKodu,
+                        z.AktifMi,
+                        z.RemoteControlId,
+                        z.GuncelInputSourceId,
+                        z.GuncelChannelListId,
+                        z.LedProcessorId,
+                        z.IrTransmitterId,
 
-            return Ok(new List<object>());
+                        LedProcessorAdi = led?.CihazAdi,
+
+                        ViplexKontroluVarMi =
+                            led?.ViplexKontroluVarMi ?? false,
+
+                        KullanicidaGosterilsinMi =
+                            led == null ||
+                            led.KullanicidaGosterilsinMi,
+
+                        CihazGorselUrl = led?.CihazGorselUrl
+                    };
+                })
+                .ToList();
+
+            return Ok(result);
         }
+
 
         // ------------------------------------------------------------
         // MANUEL LED / VIPLEX MODU

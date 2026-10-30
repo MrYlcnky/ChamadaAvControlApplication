@@ -43,7 +43,7 @@ api.interceptors.response.use(
     // 403: Yasaklı/Bu işlemi yapmaya rolü yetmiyor
     if (
       error.response &&
-      (error.response.status === 401 || error.response.status === 403) &&
+      error.response.status === 401 &&
       !isLoginRequest // Login veya AutoLogin isteği DEĞİLSE bu bloğa gir
     ) {
       // Hafızadaki geçersiz verileri temizle

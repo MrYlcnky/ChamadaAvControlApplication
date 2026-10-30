@@ -12,5 +12,8 @@ namespace AVControl.Core.Entities
         public KullaniciRolu Rol { get; set; }
 
         public ICollection<IslemLog>? IslemLoglari { get; set; }
+
+        // Bir kullanıcıya birden fazla bölge atanabilir.
+        public ICollection<KullaniciBolge> KullaniciBolgeleri { get; set; } = new List<KullaniciBolge>();
     }
 }

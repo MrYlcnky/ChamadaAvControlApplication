@@ -86,6 +86,19 @@ const orchestrationService = {
 
     return response.data;
   },
+
+  getBolgeCanliKaynak: async (outputZoneId) => {
+    const response = await api.get(
+      `${URL}/bolge-canli-kaynak/${outputZoneId}`,
+      {
+        timeout: 10000,
+      },
+    );
+
+    return response.data;
+  },
 };
+
+// Seçili bölgenin Matrix üzerindeki gerçek bağlı kaynağını sorgula.
 
 export default orchestrationService;

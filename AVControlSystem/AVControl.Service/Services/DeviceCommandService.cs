@@ -88,6 +88,73 @@ namespace AVControl.Service.Services
                 return null; // Ağ hatası
             }
         }
+
+        // Tek bölgenin Matrix üzerindeki mevcut girişini hızlıca sorgular.
+        public async Task<(bool Success, int? InputPort)> GetMatrixOutputRouteAsync(
+            MatrixDevice device,
+            string outputPort)
+        {
+            if (device == null || string.IsNullOrWhiteSpace(outputPort))
+                return (false, null);
+
+            string port = outputPort.Trim().ToUpperInvariant();
+
+            // Veritabanında port "1" olarak tutuluyorsa "A" harfine dönüştür.
+            if (int.TryParse(port, out int portNumber))
+            {
+                if (portNumber < 1 || portNumber > 26 ||
+                    portNumber > device.OutputSayisi)
+                    return (false, null);
+
+                port = ((char)('A' + portNumber - 1)).ToString();
+            }
+
+            if (port.Length != 1 ||
+                port[0] < 'A' ||
+                port[0] > 'Z' ||
+                port[0] - 'A' + 1 > device.OutputSayisi)
+                return (false, null);
+
+            try
+            {
+                using var client = new TcpClient();
+
+                await client.ConnectAsync(
+                    device.IpAdresi,
+                    device.TelnetPort > 0 ? device.TelnetPort : 23
+                ).WaitAsync(TimeSpan.FromSeconds(2));
+
+                using var stream = client.GetStream();
+
+                await ClearInitialBufferAsync(stream);
+
+                // Yalnızca seçili çıkışı sorgula.
+                string response = await SendCommandAndWaitAsync(
+                    stream,
+                    $"#show_r {port}"
+                );
+
+                var match = Regex.Match(
+                    response,
+                    @"INPUT\s+(\d+)",
+                    RegexOptions.IgnoreCase
+                );
+
+                if (match.Success &&
+                    int.TryParse(match.Groups[1].Value, out int inputPort) &&
+                    inputPort >= 1 &&
+                    inputPort <= device.InputSayisi)
+                {
+                    return (true, inputPort);
+                }
+
+                return (false, null);
+            }
+            catch (Exception)
+            {
+                return (false, null);
+            }
+        }
         // ==============================================================================
         // 4. MATRIX CANLI DURUM SORGULAMA (KESİN VE GARANTİLİ YÖNTEM)
         // ==============================================================================

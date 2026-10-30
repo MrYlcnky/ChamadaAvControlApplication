@@ -253,6 +253,28 @@ namespace AVControl.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AVControl.Core.Entities.KullaniciBolge", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<int>("KullaniciId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OutputZoneId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutputZoneId");
+
+                    b.HasIndex("KullaniciId", "OutputZoneId")
+                        .IsUnique();
+
+                    b.ToTable("KullaniciBolgeleri", (string)null);
+                });
+
             modelBuilder.Entity("AVControl.Core.Entities.LedProcessor", b =>
                 {
                     b.Property<int>("Id")
@@ -539,6 +561,25 @@ namespace AVControl.Data.Migrations
                     b.Navigation("Kullanici");
                 });
 
+            modelBuilder.Entity("AVControl.Core.Entities.KullaniciBolge", b =>
+                {
+                    b.HasOne("AVControl.Core.Entities.Kullanici", "Kullanici")
+                        .WithMany("KullaniciBolgeleri")
+                        .HasForeignKey("KullaniciId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AVControl.Core.Entities.OutputZone", "OutputZone")
+                        .WithMany("KullaniciBolgeleri")
+                        .HasForeignKey("OutputZoneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kullanici");
+
+                    b.Navigation("OutputZone");
+                });
+
             modelBuilder.Entity("AVControl.Core.Entities.OutputZone", b =>
                 {
                     b.HasOne("AVControl.Core.Entities.IrTransmitter", "IrTransmitter")
@@ -597,6 +638,8 @@ namespace AVControl.Data.Migrations
             modelBuilder.Entity("AVControl.Core.Entities.Kullanici", b =>
                 {
                     b.Navigation("IslemLoglari");
+
+                    b.Navigation("KullaniciBolgeleri");
                 });
 
             modelBuilder.Entity("AVControl.Core.Entities.LedProcessor", b =>
@@ -609,6 +652,11 @@ namespace AVControl.Data.Migrations
                     b.Navigation("InputSources");
 
                     b.Navigation("OutputZones");
+                });
+
+            modelBuilder.Entity("AVControl.Core.Entities.OutputZone", b =>
+                {
+                    b.Navigation("KullaniciBolgeleri");
                 });
 
             modelBuilder.Entity("AVControl.Core.Entities.RemoteControl", b =>

@@ -47,6 +47,8 @@ builder.Services.AddScoped<IFavoriLigService, FavoriLigService>();
 
 builder.Services.AddScoped<IMacTakvimService, MacTakvimService>();
 builder.Services.AddSingleton<NovastarService>();
+builder.Services.AddHostedService<AVControl.WEBAPI.Services.MacTakvimSyncWorker>();
+builder.Services.AddScoped<IBolgeYetkiService, BolgeYetkiService>();
 
 
 // 4. JWT Authentication

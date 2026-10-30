@@ -13,5 +13,7 @@ namespace AVControl.Core.Interfaces
         Task<string?> LearnIrCommandAsync(string piIpAdresi);
 
         Task<object> GetMatrixLiveStatusAsync(MatrixDevice device);
+
+        Task<(bool Success, int? InputPort)> GetMatrixOutputRouteAsync( MatrixDevice device, string outputPort);
     }
 }
